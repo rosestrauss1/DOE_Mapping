@@ -30,25 +30,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fetch GeoJSON data and process it with Leaflet's built-in functionality
+    // Fetch GeoJSON data
     fetch('projects.geojson')
         .then(response => response.json())
         .then(data => {
-            L.geoJson(data, {
-                onEachFeature: function(feature, layer) {
-                    var popupContent = `
-                        <div>
-                            <h3>${feature.properties['Project Name']}</h3>
-                            <p>${feature.properties.City}, ${feature.properties.State}</p>
-                            <p>Funding Amount: $${feature.properties['Funding Amount'].toLocaleString()}</p>
-                            <button onclick="showInfoCard(event, '${feature.properties['Project Name']}', '${feature.properties.City}', '${feature.properties.State}', '${feature.properties['Funding Amount']}')">Learn More</button>
-                        </div>
-                    `;
-                    layer.bindPopup(popupContent);
-                    markers.addLayer(layer);
-                }
+            // Iterate through each feature
+            data.features.forEach(feature => {
+                var marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+                
+                // Create popup content
+                var popupContent = `
+                    <div>
+                        <h3>${feature.properties['Project Name']}</h3>
+                        <p>${feature.properties.City}, ${feature.properties.State}</p>
+                        <p>Funding Amount: $${feature.properties['Funding Amount'].toLocaleString()}</p>
+                        <button onclick="showInfoCard(event, '${feature.properties['Project Name']}', '${feature.properties.City}', '${feature.properties.State}', '${feature.properties['Funding Amount']}')">Learn More</button>
+                    </div>
+                `;
+
+                // Bind popup to marker
+                marker.bindPopup(popupContent);
+                
+                // Add marker to marker cluster group
+                markers.addLayer(marker);
             });
-            // Add marker cluster group to map after all markers are added
+
+            // Add marker cluster group to map
             map.addLayer(markers);
         });
 
@@ -81,6 +88,9 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
     });
 
+    // Load project locations
+    loadProjectLocations();
+
     // Autocomplete for project search
     $("#projectSearch").autocomplete({
         source: function(request, response) {
@@ -90,10 +100,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     const results = data.features.filter(feature => {
                         const projectName = feature.properties['Project Name'].toLowerCase();
+                        const city = feature.properties.City.toLowerCase();
+                        const state = feature.properties.State.toLowerCase();
                         const term = request.term.toLowerCase();
-                        return projectName.includes(term);
+                        return projectName.includes(term) || city.includes(term) || state.includes(term);
                     }).map(feature => ({
-                        label: feature.properties['Project Name'],
+                        label: feature.properties['Project Name'] + ' - ' + feature.properties.City + ', ' + feature.properties.State,
                         value: feature.properties['Project Name']
                     }));
                     response(results);
@@ -104,58 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle selection
             // For now, let's just log the selected project
             console.log("Selected project:", ui.item.value);
-        }
-    });
-
-    // Autocomplete for city search
-    $("#citySearch").autocomplete({
-        source: function(request, response) {
-            // Fetch data and filter based on search term
-            fetch('projects.geojson')
-                .then(response => response.json())
-                .then(data => {
-                    const results = data.features.filter(feature => {
-                        const city = feature.properties.City.toLowerCase();
-                        const term = request.term.toLowerCase();
-                        return city.includes(term);
-                    }).map(feature => ({
-                        label: feature.properties.City,
-                        value: feature.properties.City
-                    }));
-                    response(results);
-                });
-        },
-        minLength: 2, // Minimum characters before triggering autocomplete
-        select: function(event, ui) {
-            // Handle selection
-            // For now, let's just log the selected city
-            console.log("Selected city:", ui.item.value);
-        }
-    });
-
-    // Autocomplete for state search
-    $("#stateSearch").autocomplete({
-        source: function(request, response) {
-            // Fetch data and filter based on search term
-            fetch('projects.geojson')
-                .then(response => response.json())
-                .then(data => {
-                    const results = data.features.filter(feature => {
-                        const state = feature.properties.State.toLowerCase();
-                        const term = request.term.toLowerCase();
-                        return state.includes(term);
-                    }).map(feature => ({
-                        label: feature.properties.State,
-                        value: feature.properties.State
-                    }));
-                    response(results);
-                });
-        },
-        minLength: 2, // Minimum characters before triggering autocomplete
-        select: function(event, ui) {
-            // Handle selection
-            // For now, let's just log the selected state
-            console.log("Selected state:", ui.item.value);
         }
     });
 });
