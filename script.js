@@ -57,4 +57,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load project locations
     loadProjectLocations();
+
+    // Autocomplete for project search
+    $("#projectSearch").autocomplete({
+        source: function(request, response) {
+            // Fetch data and filter based on search term
+            fetch('projects.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.features.filter(feature => {
+                        const projectName = feature.properties['Project Name'].toLowerCase();
+                        const city = feature.properties.City.toLowerCase();
+                        const state = feature.properties.State.toLowerCase();
+                        const term = request.term.toLowerCase();
+                        return projectName.includes(term) || city.includes(term) || state.includes(term);
+                    }).map(feature => ({
+                        label: feature.properties['Project Name'] + ' - ' + feature.properties.City + ', ' + feature.properties.State,
+                        value: feature.properties['Project Name']
+                    }));
+                    response(results);
+                });
+        },
+        minLength: 2, // Minimum characters before triggering autocomplete
+        select: function(event, ui) {
+            // Handle selection
+            // For now, let's just log the selected project
+            console.log("Selected project:", ui.item.value);
+        }
+    });
 });
