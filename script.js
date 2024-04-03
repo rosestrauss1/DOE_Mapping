@@ -30,32 +30,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fetch GeoJSON data
+    // Fetch GeoJSON data and process it with Leaflet's built-in functionality
     fetch('projects.geojson')
         .then(response => response.json())
         .then(data => {
-            // Iterate through each feature
-            data.features.forEach(feature => {
-                var marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
-                
-                // Create popup content
-                var popupContent = `
-                    <div>
-                        <h3>${feature.properties['Project Name']}</h3>
-                        <p>${feature.properties.City}, ${feature.properties.State}</p>
-                        <p>Funding Amount: $${feature.properties['Funding Amount'].toLocaleString()}</p>
-                        <button onclick="showInfoCard(event, '${feature.properties['Project Name']}', '${feature.properties.City}', '${feature.properties.State}', '${feature.properties['Funding Amount']}')">Learn More</button>
-                    </div>
-                `;
-
-                // Bind popup to marker
-                marker.bindPopup(popupContent);
-                
-                // Add marker to marker cluster group
-                markers.addLayer(marker);
+            L.geoJson(data, {
+                onEachFeature: function(feature, layer) {
+                    var popupContent = `
+                        <div>
+                            <h3>${feature.properties['Project Name']}</h3>
+                            <p>${feature.properties.City}, ${feature.properties.State}</p>
+                            <p>Funding Amount: $${feature.properties['Funding Amount'].toLocaleString()}</p>
+                            <button onclick="showInfoCard(event, '${feature.properties['Project Name']}', '${feature.properties.City}', '${feature.properties.State}', '${feature.properties['Funding Amount']}')">Learn More</button>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                    markers.addLayer(layer);
+                }
             });
-
-            // Add marker cluster group to map
+            // Add marker cluster group to map after all markers are added
             map.addLayer(markers);
         });
 
@@ -87,9 +80,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('infoCard').addEventListener('click', function(e) {
         e.stopPropagation();
     });
-
-    // Load project locations
-    loadProjectLocations();
 
     // Autocomplete for project search
     $("#projectSearch").autocomplete({
