@@ -98,14 +98,15 @@ button:hover {
 
 .ui-autocomplete {
     position: fixed;
-    bottom: 50px; /* Position just above the search container */
-    max-height: 200px; /* Limit height */
-    overflow-y: auto; /* Enable vertical scrolling */
-    width: 90%; /* Responsive width */
-    max-width: 400px; /* Max width */
+    bottom: 50px; /* Adjusted dynamically by JS, default position before JS adjustment */
+    max-height: 200px;
+    overflow-y: auto;
+    width: 90%; /* This will be overridden by JS to match the input field's width */
+    max-width: 400px; /* Ensure dropdown doesn't get too wide */
     border: 1px solid #ccc;
     background-color: #fff;
-    z-index: 3; /* Ensure dropdown is above map but below overlay */
+    z-index: 3;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Adds a subtle shadow for depth */
 }
 
 .ui-menu-item {
