@@ -97,7 +97,7 @@ button:hover {
 }
 
 .ui-autocomplete {
-    max-height: 200px; /* Limit height */
+    max-height: 300px; /* Limit height */
     overflow-y: auto; /* Enable vertical scrolling */
     border: 1px solid #ccc; /* Border color */
     background-color: #fff; /* Background color */
