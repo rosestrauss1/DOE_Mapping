@@ -97,23 +97,21 @@ button:hover {
 }
 
 .ui-autocomplete {
-    position: fixed;
-    bottom: 50px; /* Adjusted dynamically by JS, default position before JS adjustment */
-    max-height: 200px;
-    overflow-y: auto;
-    width: 90%; /* This will be overridden by JS to match the input field's width */
-    max-width: 400px; /* Ensure dropdown doesn't get too wide */
-    border: 1px solid #ccc;
-    background-color: #fff;
-    z-index: 3;
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #ccc; /* Border color */
+    background-color: #fff; /* Background color */
+    z-index: 3; /* Ensures dropdown is above map but below overlay */
     box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Adds a subtle shadow for depth */
+    font-size: 16px; /* Increase font size */
 }
 
 .ui-menu-item {
-    padding: 10px;
+    padding: 10px 15px; /* Increase padding */
     cursor: pointer;
+    line-height: 1.5; /* Adjust line height for better readability */
 }
 
-.ui-menu-item:hover {
-    background-color: #f4f4f4;
+.ui-menu-item-wrapper {
+    font-size: 16px; /* Ensure font size is consistent in all parts of the item */
 }
