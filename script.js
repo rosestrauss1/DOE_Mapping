@@ -52,69 +52,53 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
     });
 
-    // Implement the search functionality
-    $("#projectSearch").autocomplete({
-        source: function(request, response) {
-            const results = geojsonData.features.filter(feature => {
-                const projectName = feature.properties['Project Name'].toLowerCase();
-                const term = request.term.toLowerCase();
-                return projectName.includes(term);
-            }).map(feature => ({
-                label: feature.properties['Project Name'] + ' - ' + feature.properties.City + ', ' + feature.properties.State,
-                value: feature.properties['Project Name']
-            }));
-            response(results);
-        },
-        minLength: 2,
-        select: function(event, ui) {
-            const selectedFeature = geojsonData.features.find(feature => feature.properties['Project Name'] === ui.item.value);
-            if(selectedFeature) {
-                map.flyTo([selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]], 14);
+    // Search functionality with dynamic positioning
+    function setupAutocomplete(selector) {
+        $(selector).autocomplete({
+            source: function(request, response) {
+                let propertyMap = {
+                    '#projectSearch': 'Project Name',
+                    '#citySearch': 'City',
+                    '#stateSearch': 'State'
+                };
+                let propName = propertyMap[selector];
+                const results = geojsonData.features.filter(feature => {
+                    const value = feature.properties[propName].toLowerCase();
+                    const term = request.term.toLowerCase();
+                    return value.includes(term);
+                }).map(feature => ({
+                    label: feature.properties['Project Name'] + ' - ' + feature.properties.City + ', ' + feature.properties.State,
+                    value: feature.properties[propName]
+                }));
+                response(results);
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                let propName = {
+                    '#projectSearch': 'Project Name',
+                    '#citySearch': 'City',
+                    '#stateSearch': 'State'
+                }[selector];
+                const selectedFeatures = geojsonData.features.filter(feature => feature.properties[propName] === ui.item.value);
+                if(selectedFeatures.length) {
+                    map.flyTo([selectedFeatures[0].geometry.coordinates[1], selectedFeatures[0].geometry.coordinates[0]], 14);
+                }
+            },
+            open: function() {
+                var that = this;
+                setTimeout(function() {
+                    $(that).autocomplete("widget").css({
+                        "top": ($(that).offset().top - $(that).autocomplete("widget").height() - 40) + "px",
+                        "left": $(that).offset().left + "px",
+                        "width": $(that).outerWidth() + "px"
+                    });
+                });
             }
-        }
-    });
+        });
+    }
 
-    // City Search
-    $("#citySearch").autocomplete({
-        source: function(request, response) {
-            const results = geojsonData.features.filter(feature => {
-                const cityName = feature.properties.City.toLowerCase();
-                const term = request.term.toLowerCase();
-                return cityName.includes(term);
-            }).map(feature => ({
-                label: feature.properties.City + ' - ' + feature.properties['Project Name'],
-                value: feature.properties.City
-            }));
-            response(results);
-        },
-        minLength: 2,
-        select: function(event, ui) {
-            const selectedFeatures = geojsonData.features.filter(feature => feature.properties.City === ui.item.value);
-            if(selectedFeatures.length) {
-                map.flyTo([selectedFeatures[0].geometry.coordinates[1], selectedFeatures[0].geometry.coordinates[0]], 14);
-            }
-        }
-    });
-
-    // State Search
-    $("#stateSearch").autocomplete({
-        source: function(request, response) {
-            const results = geojsonData.features.filter(feature => {
-                const stateName = feature.properties.State.toLowerCase();
-                const term = request.term.toLowerCase();
-                return stateName.includes(term);
-            }).map(feature => ({
-                label: feature.properties.State + ' - ' + feature.properties['Project Name'],
-                value: feature.properties.State
-            }));
-            response(results);
-        },
-        minLength: 2,
-        select: function(event, ui) {
-            const selectedFeatures = geojsonData.features.filter(feature => feature.properties.State === ui.item.value);
-            if(selectedFeatures.length) {
-                map.flyTo([selectedFeatures[0].geometry.coordinates[1], selectedFeatures[0].geometry.coordinates[0]], 14);
-            }
-        }
-    });
+    // Initialize autocompletes
+    setupAutocomplete('#projectSearch');
+    setupAutocomplete('#citySearch');
+    setupAutocomplete('#stateSearch');
 });
